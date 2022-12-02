@@ -368,11 +368,78 @@ class TSPSolver:
 	'''
 		
 	def fancy( self,time_allowance=60.0 ):
-		pass
+		startTime = time.time()
+		cities = self._scenario.getCities()
 
+		bssf = self.greedy(time_allowance)
+		bestRouteSoFar = []
 
+		for city in bssf['soln'].route:
+			bestRouteSoFar.append(city._index)
 
+		done = False
+		while not done:
+			neighbors, costs = self.findNeighbors(bestRouteSoFar)
+			for i in range(len(neighbors)):
+				if costs[i] < bssf.cost:
+					bestRouteSoFar = neighbors[i]
+					# calculate solution object for bssf
+				else:
+					continue
 
+			# find neighbors - k edit distance of cities
+			# check if any neighbors cost < bssf
+			# if so, new path cost = bssf
+			# keep going until we decide to stop
+
+		endTime = time.time()
+
+		solut = TSPSolution(route)
+		results = {}
+		results['cost'] = bssf
+		results['time'] = endTime - startTime
+		results['count'] = 0
+		results['soln'] = solut
+		results['max'] = maxSizeOfQueue
+		results['total'] = totalStatesCreated
+		results['pruned'] = totalStatesPruned
+		return results
+
+	def findNeighbors(self, route):
+		validRoutes = []
+		routeCosts = []
+
+		for i in range(len(route)):
+			temp = route[i]
+			if i+1 < len(route):
+				route[i] = route[i+1]
+				route[i+1] = temp
+			else :
+				route[i] = route[0]
+				route[0] = temp
+
+			routeCost = calcRouteCost(route)
+			if routeCost != float('inf'):
+				validRoutes.append(route)
+				routeCosts.append(routeCost)
+
+		# if validRoutes is empty, do we want to do more edits?
+
+		return validRoutes, routeCosts
+
+		# flip k cities in route
+
+		# only return valid tours
+
+	def calcRouteCost(self, route):
+		cities = self._scenario.getCities()
+		cost = 0
+		last = cities[route[0]]
+		for i in route[1:]:
+			cost += last.costTo(cities[i])
+			last = i
+		cost += route[-1].costTo(route[0])
+		return cost
 
 
 
