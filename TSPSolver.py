@@ -379,10 +379,13 @@ class TSPSolver:
 
 		done = False
 		while not done:
-			neighbors, costs = self.findNeighbors(bestRouteSoFar)
+			neighbors, costs = self.findNeighbors(bestRouteSoFar, bssf)
+			if len(neighbors) == 0:
+				done = True
 			for i in range(len(neighbors)):
-				if costs[i] < bssf.cost:
+				if costs[i] < bssf['cost']:
 					bestRouteSoFar = neighbors[i]
+					bssf['cost'] = cost[i]
 					# calculate solution object for bssf
 				else:
 					continue
@@ -393,19 +396,24 @@ class TSPSolver:
 			# keep going until we decide to stop
 
 		endTime = time.time()
+		route = []
+		for index in bestRouteSoFar:  # O(n) time and space - turn the indicies back to city elements for the solution
+			route.append(cities[index])
+
+		#todo: figure out why route isn't show on GUI
 
 		solut = TSPSolution(route)
 		results = {}
-		results['cost'] = bssf
+		results['cost'] = bssf['cost']
 		results['time'] = endTime - startTime
 		results['count'] = 0
 		results['soln'] = solut
-		results['max'] = maxSizeOfQueue
-		results['total'] = totalStatesCreated
-		results['pruned'] = totalStatesPruned
+		# results['max'] = maxSizeOfQueue
+		# results['total'] = totalStatesCreated
+		# results['pruned'] = totalStatesPruned
 		return results
 
-	def findNeighbors(self, route):
+	def findNeighbors(self, route, bssf):
 		validRoutes = []
 		routeCosts = []
 
@@ -418,8 +426,8 @@ class TSPSolver:
 				route[i] = route[0]
 				route[0] = temp
 
-			routeCost = calcRouteCost(route)
-			if routeCost != float('inf'):
+			routeCost = self.calcRouteCost(route)
+			if routeCost != float('inf') and routeCost < bssf['cost']:
 				validRoutes.append(route)
 				routeCosts.append(routeCost)
 
@@ -436,9 +444,9 @@ class TSPSolver:
 		cost = 0
 		last = cities[route[0]]
 		for i in route[1:]:
-			cost += last.costTo(cities[i])
-			last = i
-		cost += route[-1].costTo(route[0])
+			cost += cities[last._index].costTo(cities[i])
+			last = cities[i]
+		cost += cities[route[-1]].costTo(cities[route[0]])
 		return cost
 
 
