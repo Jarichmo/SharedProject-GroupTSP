@@ -372,6 +372,7 @@ class TSPSolver:
 		cities = self._scenario.getCities()
 
 		bssf = self.greedy(time_allowance)
+		# bssf = self.defaultRandomTour(time_allowance)
 		bestRouteSoFar = []
 
 		for city in bssf['soln'].route:
@@ -385,7 +386,7 @@ class TSPSolver:
 			for i in range(len(neighbors)):
 				if costs[i] < bssf['cost']:
 					bestRouteSoFar = neighbors[i]
-					bssf['cost'] = cost[i]
+					bssf['cost'] = costs[i]
 					# calculate solution object for bssf
 				else:
 					continue
@@ -397,8 +398,11 @@ class TSPSolver:
 
 		endTime = time.time()
 		route = []
-		for index in bestRouteSoFar:  # O(n) time and space - turn the indicies back to city elements for the solution
-			route.append(cities[index])
+		if len(bestRouteSoFar) == 0:
+			route = bssf['soln']
+		else:
+			for index in bestRouteSoFar:  # O(n) time and space - turn the indicies back to city elements for the solution
+				route.append(cities[index])
 
 		#todo: figure out why route isn't show on GUI
 
@@ -416,19 +420,20 @@ class TSPSolver:
 	def findNeighbors(self, route, bssf):
 		validRoutes = []
 		routeCosts = []
+		testRoute = copy.copy(route)
 
 		for i in range(len(route)):
-			temp = route[i]
+			temp = testRoute[i]
 			if i+1 < len(route):
-				route[i] = route[i+1]
-				route[i+1] = temp
-			else :
-				route[i] = route[0]
-				route[0] = temp
+				testRoute[i] = testRoute[i+1]
+				testRoute[i+1] = temp
+			else:
+				testRoute[i] = testRoute[0]
+				testRoute[0] = temp
 
-			routeCost = self.calcRouteCost(route)
+			routeCost = self.calcRouteCost(testRoute)
 			if routeCost != float('inf') and routeCost < bssf['cost']:
-				validRoutes.append(route)
+				validRoutes.append(testRoute)
 				routeCosts.append(routeCost)
 
 		# if validRoutes is empty, do we want to do more edits?
